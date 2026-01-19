@@ -7,6 +7,7 @@ import os
 import re
 import sys
 import time
+import uuid
 from pathlib import Path
 from typing import Optional, Tuple
 
@@ -170,6 +171,10 @@ def main() -> int:
 
     root = args.root.resolve()
 
+    run_id = str(uuid.uuid4())
+    run_ts = int(time.time())
+
+
     # Extension set
     if args.ext is not None:
         ext_filter = set()
@@ -188,6 +193,7 @@ def main() -> int:
     # Logging
     logf = None
     log_path = None
+    exts_used = sorted(ext_filter)  # ext_filter already lowercased
     if args.apply:
         log_path = args.log or (root / "rename-log.jsonl")
         logf = log_path.open("a", encoding="utf-8")
@@ -239,17 +245,30 @@ def main() -> int:
                 if args.apply:
                     p.rename(dst)
                     renamed += 1
+
                     if logf:
+                        st = dst.stat() if args.apply else p.stat()
                         rec = {
+                            "ts": int(time.time()),
+                            "run_id": run_id,
                             "mode": "apply",
+                            "dry_run": (not args.apply),
+                            "root": str(root),
+                            "chars_min": args.chars,
+                            "preset": args.preset,
+                            "exts": exts_used,
+                            "verify": False,
+                            "conflict_policy": None,
                             "old": str(p),
                             "new": str(dst),
                             "suffix_used": sfx,
+                            "suffix_removed": None,
                             "blake3_b64url": b64url_no_pad(digest),
-                            "size": dst.stat().st_size,
-                            "mtime": int(dst.stat().st_mtime),
+                            "size": st.st_size,
+                            "mtime": int(st.st_mtime),
                         }
                         logf.write(json.dumps(rec, ensure_ascii=False) + "\n")
+
                 else:
                     renamed += 1
 
