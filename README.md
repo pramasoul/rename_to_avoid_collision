@@ -6,7 +6,7 @@ Rename camera-like files by appending (or stripping) a short base64url BLAKE3 su
 
 - Appends `__<suffix>` to filenames (e.g., `IMG_1234__a1b2c3.jpg`) based on the file's BLAKE3 digest
 - Skips files that already have a suffix or are duplicates
-- Can strip suffixes back to the original name, optionally verifying the suffix matches the file content
+- Can strip suffixes back to the original name, verifying the suffix against file content by default
 - Handles collisions when stripping with configurable policies
 - Logs applied renames to JSONL for auditability
 
@@ -41,10 +41,10 @@ Strip suffixes (dry-run):
 python3 rename_to_avoid_collision.py /path/to/photos --strip --preset apple-camera
 ```
 
-Strip suffixes with verification and apply:
+Strip suffixes with verification (default) and apply:
 
 ```bash
-python3 rename_to_avoid_collision.py /path/to/photos --strip --verify --apply
+python3 rename_to_avoid_collision.py /path/to/photos --strip --apply
 ```
 
 ## Options
@@ -54,7 +54,7 @@ python3 rename_to_avoid_collision.py /path/to/photos --strip --verify --apply
 - `--strip`: Remove suffixes instead of appending
 - `--preset apple-camera`: Use Apple camera-related extensions
 - `--ext .heic --ext .jpg`: Custom extension list (repeatable)
-- `--verify`: When stripping, verify suffix matches the file's digest
+- `--no-verify`: When stripping, skip verifying suffix against the file's digest
 - `--conflict {refuse,keep-suffixed,add-counter}`: Conflict policy when stripping
 - `--log PATH`: JSONL log path (default: `<root>/rename-log.jsonl` when `--apply`)
 - `--progress N`: Print progress every N files scanned
@@ -65,7 +65,7 @@ python3 rename_to_avoid_collision.py /path/to/photos --strip --verify --apply
 
 - The suffix is derived from the BLAKE3 digest and encoded as base64url without padding.
 - If a collision is detected with different content, the suffix is deterministically extended until unique.
-- In strip mode, `--verify` is recommended if you want to ensure the suffix truly matches the file content.
+- In strip mode, verification is enabled by default to ensure the suffix matches the file content.
 - Default extension set is `.heic` unless you use `--preset` or `--ext`.
 
 ## Logging

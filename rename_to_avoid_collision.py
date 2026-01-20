@@ -142,10 +142,12 @@ def main() -> int:
 
     # Strip options
     ap.add_argument(
-        "--verify",
-        action="store_true",
-        help="When stripping, recompute BLAKE3 and only strip if filename suffix matches digest-derived suffix (slower, safer).",
+        "--no-verify",
+        dest="verify",
+        action="store_false",
+        help="When stripping, do not verify suffix against file digest (faster, less safe).",
     )
+    ap.set_defaults(verify=True)
     ap.add_argument(
         "--conflict",
         choices=["refuse", "keep-suffixed", "add-counter"],
