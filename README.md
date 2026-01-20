@@ -21,30 +21,37 @@ Install:
 python3 -m pip install blake3
 ```
 
+## Tests
+
+```bash
+python3 -m pip install -e .[dev]
+pytest
+```
+
 ## Usage
 
 Dry-run (default) to see what would change:
 
 ```bash
-python3 rename_to_avoid_collision.py /path/to/photos --preset apple-camera
+rename-to-avoid-collision /path/to/photos --preset apple-camera
 ```
 
 Apply renames:
 
 ```bash
-python3 rename_to_avoid_collision.py /path/to/photos --preset apple-camera --apply
+rename-to-avoid-collision /path/to/photos --preset apple-camera --apply
 ```
 
 Strip suffixes (dry-run):
 
 ```bash
-python3 rename_to_avoid_collision.py /path/to/photos --strip --preset apple-camera
+rename-to-avoid-collision /path/to/photos --strip --preset apple-camera
 ```
 
 Strip suffixes with verification (default) and apply:
 
 ```bash
-python3 rename_to_avoid_collision.py /path/to/photos --strip --apply
+rename-to-avoid-collision /path/to/photos --strip --apply
 ```
 
 ## Options
