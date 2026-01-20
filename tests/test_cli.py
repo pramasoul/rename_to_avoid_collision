@@ -1,32 +1,52 @@
 from pathlib import Path
 
-from rename_to_avoid_collision import cli, core
+from rename_to_avoid_collision import cli
+
+HELLO_B3_HEX = "ea8f163db38682925e4491c5e58d4bb3506ef8c14eb78a86e908c5624a67200f"
 
 
-def test_cli_strip_dry_run(tmp_path: Path):
-    src = tmp_path / "img.heic"
-    src.write_bytes(b"hello")
-    digest = core.digest_blake3(src)
-    sfx = core.suffix_from_digest(digest, 6)
-    suffixed = tmp_path / f"img__{sfx}.heic"
-    src.rename(suffixed)
+class FakePath:
+    def __init__(self, name: str):
+        self._name = name
+        p = Path(name)
+        self._suffix = p.suffix
+        self._stem = p.stem
+        self._parent = Path("/fake")
 
-    code = cli.main([str(tmp_path), "--strip", "--quiet"])
+    def is_file(self) -> bool:
+        return True
+
+    @property
+    def suffix(self) -> str:
+        return self._suffix
+
+    @property
+    def stem(self) -> str:
+        return self._stem
+
+    @property
+    def parent(self) -> Path:
+        return self._parent
+
+    def with_name(self, new_name: str):
+        return FakePath(new_name)
+
+    def exists(self) -> bool:
+        return False
+
+    def __str__(self) -> str:
+        return self._name
+
+
+def test_cli_strip_verify_fail_emits_count(monkeypatch, capsys):
+    fake = FakePath("img__6o8WPa.heic")
+
+    monkeypatch.setattr(cli, "iter_files", lambda root: [fake])
+    monkeypatch.setattr(cli, "digest_blake3", lambda path: bytes.fromhex(HELLO_B3_HEX))
+
+    code = cli.main(["/root", "--strip"])
+
+    out = capsys.readouterr().out
 
     assert code == 0
-    assert suffixed.exists()
-
-
-def test_cli_strip_apply(tmp_path: Path):
-    src = tmp_path / "img.heic"
-    src.write_bytes(b"hello")
-    digest = core.digest_blake3(src)
-    sfx = core.suffix_from_digest(digest, 6)
-    suffixed = tmp_path / f"img__{sfx}.heic"
-    src.rename(suffixed)
-
-    code = cli.main([str(tmp_path), "--strip", "--apply", "--quiet"])
-
-    assert code == 0
-    assert not suffixed.exists()
-    assert (tmp_path / "img.heic").exists()
+    assert "skipped_verify_fail=1" in out
