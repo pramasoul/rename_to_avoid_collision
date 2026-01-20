@@ -1,0 +1,15 @@
+[project]
+name = "rename-to-avoid-collision"
+version = "0.0.0"
+description = "Rename camera-like files by appending/removing BLAKE3 suffixes to avoid collisions."
+requires-python = ">=3.8"
+dependencies = ["blake3"]
+
+[project.scripts]
+rename-to-avoid-collision = "rename_to_avoid_collision.cli:main"
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
